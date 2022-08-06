@@ -1,4 +1,4 @@
-package com.kafka.exam.exam.producer;
+package com.kafka.exam.producer;
 
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
