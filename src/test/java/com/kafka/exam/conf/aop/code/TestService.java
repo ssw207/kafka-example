@@ -19,4 +19,9 @@ public class TestService {
         log.info(TestService.class.getName());
         return "ok";
     }
+
+    public String testUtil(String s) {
+        log.info("testUtil :{}", s);
+        return s;
+    }
 }

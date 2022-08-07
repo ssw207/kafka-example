@@ -27,7 +27,6 @@ public class TimeCheckAspect {
             return joinPoint.proceed();
         } finally {
             stopWatch.stop();
-            log.info("{} {} {}",stopWatch.getTotalTimeMillis(), stopWatch.getTotalTimeSeconds(), stopWatch.getTotalTimeNanos());
             log.info("MethodName:[{}] / 실행시간:[{}][{}]", joinPoint.getSignature().getName(), getTime(stopWatch, timeCheckAnnotation.type()), timeCheckAnnotation.type());
         }
     }
