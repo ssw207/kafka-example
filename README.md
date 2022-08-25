@@ -14,11 +14,11 @@ log.retention.check.interval.ms=300000 # 삭제 체크 간격
 
 # 실행 명령어
 - 주키퍼 실행 (로컬 테스트용으로 1대만 실행하는 명령어), 운영환경에서는 3대이상 앙상블로 묶어야한다.
-  ```
+  ```shell
   nohup ./bin/zookeeper-server-start.sh config/zookeeper.properties &
   ```
 - 카프카 브로커 실행
-  ```
+  ```shell
   nohup ./bin/kafka-server-start.sh config/server.properties &
   ```
   
@@ -145,3 +145,76 @@ hello-group     hello.kafka     0          5               5               0    
 # 컨슈머 그룹의 오프셋을 리셋한다 -> 데이터를 처음부터 다시 읽음
 ./bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group hello-group --topic hello.kafka --reset-offsets -to-earliest  --execute
 ```
+
+## kafka-consumer-perf-test.sh
+카프카 컨슈머로 퍼포먼스를 측정할때 사용한다. 브로커 - 컨슈머간 네트워크를 체크할때 사용가능
+```shell
+./bin/kafka-consumer-perf-test.sh --bootstrap-server localhost:9092 --topic hello.kafka --messages 10 --show-detailed-stats
+```
+
+## kafka-reassign-partitions.sh
+토픽의 리더파티션이 특정 브로커에 몰릴경우 리더파티션을 고르게 분산 하기 위해 사용한다.
+
+## kafka-delete-record.sh
+지정한 파티션의 처음부터 오프셋 까지 레코드를 모두 삭제한다 
+
+# 토픽을 생성하는 두가지 방법
+## 토픽을 명시적으로 생성
+- CLI툴등 으로 명령어를 날려 토픽을 생성한다
+## 토픽을 자동으로 생성
+- 컨슈머, 프로듀서가 생성되지 않은 토픽을 브로커에 요청할때 사전에 설정된 값에 따라 자동으로 생성된다 \
+- 설정을 통해 자동생성을 못하게 할수도 있다 (추천)
+
+# 카프카 프로듀서
+## 프로듀서 내부 구조
+1. ProducerRecord
+   - 토픽, 파티션, 타임스탬프, 메시지키, 메시지 값등 전송할 레코드 정보
+   - 오프셋은 프로듀서가 보내는게 아니라 브로커에 저장될때 생성됨
+2. Partitioner 
+   - 어느 파티션으로 전송할지 결정
+3. Accumulator
+   - send를 할때마다 항상 보내는게 아니라 accumulator에 담아놨다가 배치로 전송한다
+4. sender
+   - 브로커에 레코드를 전송한다
+
+## 프로듀서의 기본 파티셔너
+- 파티셔너 종류
+  - UniformStickyPartitioner 
+    - 디폴트 파티셔너 
+  - RoundRobinPartitioner
+- 메시지 키가 있을때 동작
+  - 메시지 키의 해시값과 파티션을 매칭한다
+  - 동일한 메시지키는 동일한 파티션 번호에 전달된다 
+  - 파티션의 개수가 변경되면 파티션 번호 매칭은 깨질수 있다 (프로듀서의 초당 전송량보다 파티션을 널널하게 생성하는게 좋다)
+- 메시지 키가 없을떄 동작
+  - UniformStickyPartitioner
+    - 여러 파티션에 균등하게 전송
+    - 배치로 묶일때 까지 기다렸다 전송.
+    - RoundRobinPartitioner 보다 성능이 좋다
+  - RoundRobinPartitioner
+    - 레코드가 들어오는대로 순회하면서 전송한다
+    - accumulator에서 묶이는 정도가 적기 때문에 전송성능이 낮다
+## 프로듀서의 커스텀 파티셔너
+- Partitioner 인터페이스를 구현해 커스텀 파티셔너를 만들수 있다
+- 키뿐만 아니라 특정 데이터를 확인해서 특정 파티션으로 보내는등 동작 지정가능
+
+## 프로듀서 주요옵션(필수)
+- bootstrap.server : 데이터를 전송할 브로커의 호스트 이름:포트를 1개이상 작성(2개이상 추천)
+- key.serializer : 키를 직렬화 하는 클래스 지정
+- value,serializer : 값을 직렬화 하는 클래스 지정
+  - String 직렬화가 아니면 kafka-console-consumer로 조회가 안될수 있음 특별한 일이 없으면 String 직렬화를 사는게 좋다
+
+## 프로듀서 주요옵션(선택)
+- acks : 전송한 데이커가 브로커들에 정상적으로 저장되었는지 전송여부를 확인. 복제개수가 클수록 성능차이가 많아짐(1인경우 별차이 없다)
+  - 0 : 전송만 하면 성공으로 판단
+  - 1(기본) : 리더 파티션에 적재되면 성공. 일반적으로 사용한다 
+  - -1 : 모든 브로커에 저장되면 성공
+- in.insync.replicas : 2인경우 리더 + 파티선1개만 확인. 3개인경우 3번째 파티션은 확인하지 않는다. 2만 사용해도 충분하다
+- linger.ms : 배치를 전송하기전까지 기다리는 시간 (기본값 0), 옵션을 지정하면 속도는 느려지지만 모았다 보내기 때문에 성능은 좋아진다
+- retries: 브로커에서 에러를 받았을때 재전송을 시도하는 횟수. 재전송할 필요가 없다면 0으로 설정
+- max.in.flight.requests.per.connection: 한번에 요청하는 최대 커넥션 갯수(쓰레드와 비슷) 기본값은5. 데이터 쳐리량이 많다면 높인다
+- partitioner.class: 파티셔너 클래스 지정. 커스텀 파티셔너 클래스를 사용시 지정
+- enable.idempotence: 중복전송을 막기위해 사용. 디폴트 false (3.0에서 디폴트 true)
+
+## ISR
+- 리더 파티션과 팔로우 파티션의 오프셋이 같을때 싱크가 같은것을 뜻한다
