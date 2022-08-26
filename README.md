@@ -1,7 +1,15 @@
-# kafa 도커실행
-1. cd kafka-docker 
-2. docker-compose up -d
+# 카프카 설치(윈도우 환경)
+1. WSL2 설치
+  - https://dcrunch.dev/blog/kafka/set-up-and-run-apache-kafka-on-windows-wsl-2/
+2. 카프카 다운로드 (2.5.0)
+   - `wget https://archive.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz`
+   
+# 카프카 특징
 
+# 카프카의 장점
+1. 고가용성
+2. 유연성
+ 
 # 주요 카프카 설정
 ```
 broker.id=0 # 브로커의 아이디 0 부터 커진다
@@ -41,7 +49,7 @@ log.retention.check.interval.ms=300000 # 삭제 체크 간격
   ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
   ```
   
-# 카프가 shell script
+# 카프카 shell script
 ## kafka-topics.sh
 - 토픽 생성
     ```shell
