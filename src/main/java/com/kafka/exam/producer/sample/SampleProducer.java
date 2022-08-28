@@ -32,7 +32,7 @@ public class SampleProducer {
         producer.send(record); // 브로커로 바로 전송하지 않고 파티셔너를 통해 어커뮤레이터에 쌓아놓은뒤 배치로 한번에 전송한다
         log.info("{}", record);
         producer.flush();
-        producer.close();
+        producer.close(); // 어큐뮤레이터에 저장된 데이터를 카프카 클러스터로 전송. close를 호출하지 않고 종료시 데이터가 유실된다 
     }
 
     public void sendSimpleMessageKeyAndValueAtOnce() {
