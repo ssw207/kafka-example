@@ -1,6 +1,6 @@
-package com.kafka.exam.producer.sample;
+package com.kafka.exam.producer;
 
-import com.kafka.exam.partitoner.sample.SampleCustomPartitioner;
+import com.kafka.exam.producer.partitioner.SampleCustomPartitioner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;

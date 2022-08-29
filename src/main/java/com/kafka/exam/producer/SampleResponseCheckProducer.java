@@ -1,6 +1,5 @@
-package com.kafka.exam.producer.sample;
+package com.kafka.exam.producer;
 
-import com.kafka.exam.partitoner.sample.SampleCustomPartitioner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -9,7 +8,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -34,8 +32,8 @@ public class SampleResponseCheckProducer {
             // 프로듀서 전송결과를 동기로 받아온다.
             RecordMetadata recordMetadata = send.get();
             // 토픽, 오프셋, 파티션 정보를 알수있다
-            // ex) aks 옵션 1인경우 (리더파티션에 저장되는것 까지 확인) : com.kafka.exam.producer.sample.SampleResponseCheckProducer - 프로듀서 전송 정보 : test-0@7 -> test 토픽에 0번 파티션 에 7번 오프셋에 저장됨
-            // ex) aks 옵션 0인경우 (프로듀선에 전송만) : com.kafka.exam.producer.sample.SampleResponseCheckProducer - 프로듀서 전송 정보 : test-0@-1 -> test 토픽에 0번 파티션 어떤 오프셋에 저장되는지는 모름
+            // ex) aks 옵션 1인경우 (리더파티션에 저장되는것 까지 확인) : SampleResponseCheckProducer - 프로듀서 전송 정보 : test-0@7 -> test 토픽에 0번 파티션 에 7번 오프셋에 저장됨
+            // ex) aks 옵션 0인경우 (프로듀선에 전송만) : SampleResponseCheckProducer - 프로듀서 전송 정보 : test-0@-1 -> test 토픽에 0번 파티션 어떤 오프셋에 저장되는지는 모름
             log.info("프로듀서 전송 정보 : {}",recordMetadata.toString());
         } catch (Exception e) {
             log.error("error ", e);

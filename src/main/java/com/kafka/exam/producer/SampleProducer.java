@@ -1,4 +1,4 @@
-package com.kafka.exam.producer.sample;
+package com.kafka.exam.producer;
 
 
 
