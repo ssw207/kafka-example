@@ -284,3 +284,80 @@ hello-group     hello.kafka     0          5               5               0    
 
 # 카프카 커넥트
 - 구조 : 커넥트 > 커넥터 > 테스크
+
+## 분산 카프카 커넥트 설정
+1. 카프카 설치 폴더 `config/connect-distributed.properties` 설정정보 수정
+```shell
+bootstrap.servers=my-kafka:9092
+group.id=connect-cluster
+key.converter=org.apache.kafka.connect.storage.StringConverter
+value.converter=org.apache.kafka.connect.storage.StringConverter
+key.converter.schemas.enable=false
+value.converter.schemas.enable=false
+offset.storage.topic=connect-offsets
+offset.storage.replication.factor=1
+config.storage.topic=connect-configs
+config.storage.replication.factor=1
+status.storage.topic=connect-status
+status.storage.replication.factor=1
+offset.flush.interval.ms=10000
+```
+
+2. 실행
+- `nohub bin/connect-distributed.sh config/connect-distributed.properties &`
+
+3. 플러그인 확인
+- `curl -X GET http://localhost:8083/connector-plugins`
+
+4. 테스트 실행
+`test` 토픽의 데이터를 `/tmp/connect-test.txt` 파일에 저장하는 테스트
+```shell
+curl -X POST \
+ http://localhost:8083/connectors \
+ -H 'Content-Type: application/json' \
+ -d '{
+ "name":
+"file-sink-test",
+ "config":
+ {
+ "topics":"test", 
+ "connector.class":"org.apache.kafka.connect.file.FileStreamSinkConnector",
+ "tasks.max":1,
+ "file":"/tmp/connect-test.txt"
+ }
+}'
+```
+
+5. 실행중인 싱크 커넥터 상태 확인
+```shell
+curl http://localhost:8083/connectors/file-sink-test/status
+```
+```shell
+## 실행결과
+{"name":"file-sink-test","connector":{"state":"RUNNING","worker_id":"127.0.1.1:8083"},"tasks":[{"id":0,"state":"RUNNING","worker_id":"127.0.1.1:8083"}],"type":"sink"}
+```
+
+6. 샘플데이터 입력확인
+```shell
+# 프로듀서에 데이터입력
+bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic test
+
+# 토픽에 입력한 데이터가 파일에 저장되었는지 확인 
+cat /tmp/connect-test.txt
+```
+
+7. 커넥터 종료
+```shell
+# 실행중인 커넥터 이름 확인
+# 조회결과 : ["file-sink-test"]
+curl http://localhost:8083/connectors
+ 
+# 종료
+curl -X DELETE http://localhost:8083/connectors/file-sink-test
+```
+
+## 카프카 커넥트 웹
+카카오 오픈소스 카프카 커넥트 어드민 페이지 사용
+1. 노드 설치 `https://velog.io/@ywoosang/Node.js-%EC%84%A4%EC%B9%98`
+   - 우분투 노드 버전 업그레이드 : `https://doinge-coding.tistory.com/entry/node-%EC%84%A4%EC%B9%98node-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9Cnode-%EC%82%AD%EC%A0%9C-%EB%B0%A9%EB%B2%95`
+2. `https://github.com/kakao/kafka-connect-web`
