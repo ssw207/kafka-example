@@ -285,6 +285,17 @@ hello-group     hello.kafka     0          5               5               0    
 # 카프카 커넥트
 - 구조 : 커넥트 > 커넥터 > 테스크
 
+## 카프카 커넥트 웹
+카카오 오픈소스 카프카 커넥트 어드민 페이지 사용
+1. 노드 설치 `https://velog.io/@ywoosang/Node.js-%EC%84%A4%EC%B9%98`
+  - 우분투 노드 버전 업그레이드 : `https://doinge-coding.tistory.com/entry/node-%EC%84%A4%EC%B9%98node-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9Cnode-%EC%82%AD%EC%A0%9C-%EB%B0%A9%EB%B2%95`
+2. `https://github.com/kakao/kafka-connect-web`
+
+## 커스텀 소스 커넥터
+- 오픈소스로 제공된 커넥터로 처리할수 없을때 개발. jar 로 필드후 커넥터에서 플러그인을 읽어서 실행한다.
+- Sourceconnector : 커넥터 설정파일을 초기화하고 validation 처리
+- SourceTask : 실제 데이터를 처리. 자체적으로 오프셋을 사용한다. (소스 파일을
+- 
 ## 분산 카프카 커넥트 설정
 1. 카프카 설치 폴더 `config/connect-distributed.properties` 설정정보 수정
 ```shell
@@ -356,13 +367,4 @@ curl http://localhost:8083/connectors
 curl -X DELETE http://localhost:8083/connectors/file-sink-test
 ```
 
-## 카프카 커넥트 웹
-카카오 오픈소스 카프카 커넥트 어드민 페이지 사용
-1. 노드 설치 `https://velog.io/@ywoosang/Node.js-%EC%84%A4%EC%B9%98`
-   - 우분투 노드 버전 업그레이드 : `https://doinge-coding.tistory.com/entry/node-%EC%84%A4%EC%B9%98node-%EB%B2%84%EC%A0%84-%EC%97%85%EA%B7%B8%EB%A0%88%EC%9D%B4%EB%93%9Cnode-%EC%82%AD%EC%A0%9C-%EB%B0%A9%EB%B2%95`
-2. `https://github.com/kakao/kafka-connect-web`
-
-## 커스텀 소스 커넥터
-- 오픈소스로 제공된 커넥터로 처리할수 없을때 개발. jar 로 필드후 커넥터에서 플러그인을 읽어서 실행한다.
-- Sourceconnector : 커넥터 설정파일을 초기화하고 validation 처리 
-- SourceTask : 실제 데이터를 처리. 자체적으로 오프셋을 사용한다. (소스 파일을 어디까지 읽었는지 확인)
+ 어디까지 읽었는지 확인)
